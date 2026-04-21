@@ -38,6 +38,23 @@ function App() {
       setLoading(false);
     }
   };
+  const [favorites, setFavorites] = useState(
+  JSON.parse(localStorage.getItem("recipe-favs") || "[]")
+);
+
+const toggleFavorite = (recipe) => {
+  let updatedFavorites;
+  const isFav = favorites.some(fav => fav.id === recipe.id);
+  
+  if (isFav) {
+    updatedFavorites = favorites.filter(fav => fav.id !== recipe.id);
+  } else {
+    updatedFavorites = [...favorites, recipe];
+  }
+  
+  setFavorites(updatedFavorites);
+  localStorage.setItem("recipe-favs", JSON.stringify(updatedFavorites));
+};
 
   return (
     <div className="container">
@@ -73,13 +90,21 @@ function App() {
       </button>
 
       <div className="recipe-grid">
-        {recipes.map(recipe => (
-          <div key={recipe.id} className="recipe-card">
-            <img src={recipe.image} alt={recipe.title} />
-            <h3>{recipe.title}</h3>
-          </div>
-        ))}
+  {recipes.map(recipe => (
+    <div key={recipe.id} className="recipe-card">
+      <img src={recipe.image} alt={recipe.title} />
+      <div className="card-content">
+        <h3>{recipe.title}</h3>
+        <button 
+          onClick={() => toggleFavorite(recipe)}
+          className={`fav-btn ${favorites.some(f => f.id === recipe.id) ? 'active' : ''}`}
+        >
+          {favorites.some(f => f.id === recipe.id) ? "❤️ Saved" : "🤍 Save"}
+        </button>
       </div>
+    </div>
+  ))}
+</div>
     </div>
   );
 }
