@@ -83,6 +83,48 @@ function App() {
     localStorage.setItem("recipe-favs", JSON.stringify(updated));
   };
 
+  const [isListening, setIsListening] = useState(false);
+
+const handleVoiceSearch = () => {
+  // Check if browser supports the API
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  if (!SpeechRecognition) {
+    alert("Your browser does not support voice search. Try Chrome!");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    setIsListening(true);
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    // Clean the voice input (remove periods, make lowercase)
+    const voiceIngredient = transcript.replace(/\./g, '').toLowerCase();
+    
+    if (voiceIngredient && !pantry.includes(voiceIngredient)) {
+      setPantry([...pantry, voiceIngredient]);
+    }
+    setIsListening(false);
+  };
+
+  recognition.onerror = (event) => {
+    console.error("Speech recognition error", event.error);
+    setIsListening(false);
+  };
+
+  recognition.onend = () => {
+    setIsListening(false);
+  };
+
+  recognition.start();
+};
+
   // --- RENDER: DETAIL VIEW ---
   if (selectedRecipe) {
     return (
@@ -190,6 +232,21 @@ function App() {
     <p>No recipes found with those exact ingredients. Try adding more basics like "oil" or "salt"!</p>
   </div>
 )}
+<form onSubmit={addIngredient} className="input-group">
+  <input 
+    value={ingredient}
+    onChange={(e) => setIngredient(e.target.value)}
+    placeholder="Add an ingredient (e.g. Eggs)..."
+  />
+  <button 
+    type="button" 
+    className={`voice-btn ${isListening ? 'listening' : ''}`} 
+    onClick={handleVoiceSearch}
+  >
+    {isListening ? "Listening..." : "🎤"}
+  </button>
+  <button type="submit">Add</button>
+</form>
       
     </div>
   );
