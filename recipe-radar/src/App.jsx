@@ -171,14 +171,14 @@ const handleVoiceSearch = () => {
         <p>Your pantry, powered by AI.</p>
       </header>
 
-      <form onSubmit={addIngredient} className="input-group">
+      {/* <form onSubmit={addIngredient} className="input-group">
         <input 
           value={ingredient}
           onChange={(e) => setIngredient(e.target.value)}
           placeholder="Add an ingredient (e.g. Eggs)..."
         />
         <button type="submit">Add</button>
-      </form>
+      </form> */}
 
       <div className="pantry-list">
         {pantry.map(item => (
