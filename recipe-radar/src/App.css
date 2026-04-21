@@ -267,3 +267,11 @@ header p {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.instructions-text ul, .instructions-text ol {
+  padding-left: 20px;
+  margin-top: 10px;
+}
+
+.instructions-text li {
+  margin-bottom: 8px;
+}
