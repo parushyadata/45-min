@@ -232,20 +232,24 @@ const handleVoiceSearch = () => {
     <p>No recipes found with those exact ingredients. Try adding more basics like "oil" or "salt"!</p>
   </div>
 )}
-<form onSubmit={addIngredient} className="input-group">
-  <input 
-    value={ingredient}
-    onChange={(e) => setIngredient(e.target.value)}
-    placeholder="Add an ingredient (e.g. Eggs)..."
-  />
-  <button 
-    type="button" 
-    className={`voice-btn ${isListening ? 'listening' : ''}`} 
-    onClick={handleVoiceSearch}
-  >
-    {isListening ? "Listening..." : "🎤"}
-  </button>
-  <button type="submit">Add</button>
+{/* Unified Search Section */}
+<form onSubmit={addIngredient} className="search-container">
+  <div className="input-wrapper">
+    <input 
+      value={ingredient}
+      onChange={(e) => setIngredient(e.target.value)}
+      placeholder="Add an ingredient (e.g. Eggs)..."
+    />
+    <button 
+      type="button" 
+      className={`voice-icon-btn ${isListening ? 'listening' : ''}`} 
+      onClick={handleVoiceSearch}
+      title="Voice Search"
+    >
+      {isListening ? "..." : "🎤"}
+    </button>
+  </div>
+  <button type="submit" className="add-btn">Add</button>
 </form>
       
     </div>
