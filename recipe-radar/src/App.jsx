@@ -180,11 +180,17 @@ function App() {
         ))}
       </div>
 
-      {recipes.length === 0 && !loading && (
+      {recipes.length === 0 && !loading && pantry.length === 0 && (
         <div className="empty-state">
           <p>Add ingredients above to start your search!</p>
         </div>
       )}
+        {recipes.length === 0 && !loading && pantry.length > 0 && (
+  <div className="no-results">
+    <p>No recipes found with those exact ingredients. Try adding more basics like "oil" or "salt"!</p>
+  </div>
+)}
+      
     </div>
   );
 }
