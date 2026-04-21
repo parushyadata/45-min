@@ -1,3 +1,41 @@
+/* Color Variables */
+:root {
+  --bg-color: #f9fafb;
+  --card-bg: #ffffff;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+[data-theme='dark'] {
+  --bg-color: #111827;
+  --card-bg: #1f2937;
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --border-color: #374151;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Update your existing classes to use variables */
+.recipe-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+header h1, .recipe-card h3 {
+  color: var(--text-main);
+}
+
+.input-group input {
+  background: var(--card-bg);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
 /* Container Layout */
 .container {
   max-width: 800px;
@@ -172,4 +210,60 @@ header p {
 
 .fav-btn:hover {
   border-color: #f97316;
+}
+.theme-nav {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.theme-nav button {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.detail-view {
+  text-align: left;
+  animation: fadeIn 0.4s ease;
+}
+
+.detail-img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 20px;
+  margin-bottom: 2rem;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #f97316;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.instructions {
+  line-height: 1.6;
+  color: var(--text-main);
+}
+
+.match-tag {
+  font-size: 0.8rem;
+  color: #f97316;
+  font-weight: bold;
+  margin-top: -10px;
+  padding: 0 16px 16px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

@@ -1,19 +1,33 @@
-import { useState } from 'react';
-import { Utensils, Search, X, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Utensils, Search, X, Loader2, Moon, Sun, ChevronLeft, ChefHat, Heart } from 'lucide-react';
 import './App.css';
 
 function App() {
+  // --- STATES ---
   const [ingredient, setIngredient] = useState("");
   const [pantry, setPantry] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const [favorites, setFavorites] = useState(
+    JSON.parse(localStorage.getItem("recipe-favs") || "[]")
+  );
 
   const API_KEY = import.meta.env.VITE_SPOONACULAR_API_KEY;
 
+  // --- EFFECTS ---
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // --- LOGIC FUNCTIONS ---
   const addIngredient = (e) => {
     e.preventDefault();
-    if (ingredient.trim() && !pantry.includes(ingredient.toLowerCase())) {
-      setPantry([...pantry, ingredient.toLowerCase()]);
+    const trimmed = ingredient.trim().toLowerCase();
+    if (trimmed && !pantry.includes(trimmed)) {
+      setPantry([...pantry, trimmed]);
       setIngredient("");
     }
   };
@@ -34,41 +48,92 @@ function App() {
       setRecipes(data);
     } catch (error) {
       console.error("Fetch error:", error);
+      alert("Error finding recipes. Check your API key.");
     } finally {
       setLoading(false);
     }
   };
-  const [favorites, setFavorites] = useState(
-  JSON.parse(localStorage.getItem("recipe-favs") || "[]")
-);
 
-const toggleFavorite = (recipe) => {
-  let updatedFavorites;
-  const isFav = favorites.some(fav => fav.id === recipe.id);
-  
-  if (isFav) {
-    updatedFavorites = favorites.filter(fav => fav.id !== recipe.id);
-  } else {
-    updatedFavorites = [...favorites, recipe];
+  const fetchRecipeDetails = async (id) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `https://api.spoonacular.com/recipes/${id}/information?apiKey=${API_KEY}`
+      );
+      const data = await response.json();
+      setSelectedRecipe(data);
+      window.scrollTo(0, 0);
+    } catch (error) {
+      console.error("Detail fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = (e, recipe) => {
+    e.stopPropagation(); // Prevents opening the detail view when clicking heart
+    let updated;
+    const isFav = favorites.some(fav => fav.id === recipe.id);
+    if (isFav) {
+      updated = favorites.filter(fav => fav.id !== recipe.id);
+    } else {
+      updated = [...favorites, recipe];
+    }
+    setFavorites(updated);
+    localStorage.setItem("recipe-favs", JSON.stringify(updated));
+  };
+
+  // --- RENDER: DETAIL VIEW ---
+  if (selectedRecipe) {
+    return (
+      <div className="container detail-view">
+        <button className="back-btn" onClick={() => setSelectedRecipe(null)}>
+          <ChevronLeft size={20} /> Back to Results
+        </button>
+        
+        <img src={selectedRecipe.image} alt={selectedRecipe.title} className="detail-img" />
+        
+        <div className="detail-header">
+          <h1>{selectedRecipe.title}</h1>
+          <div className="recipe-stats">
+            <span>⏱️ {selectedRecipe.readyInMinutes} mins</span>
+            <span>👥 Servings: {selectedRecipe.servings}</span>
+          </div>
+        </div>
+
+        <div className="instructions-section">
+          <h2>Instructions</h2>
+          <div 
+            className="instructions-text"
+            dangerouslySetInnerHTML={{ __html: selectedRecipe.instructions || "No instructions provided." }} 
+          />
+        </div>
+      </div>
+    );
   }
-  
-  setFavorites(updatedFavorites);
-  localStorage.setItem("recipe-favs", JSON.stringify(updatedFavorites));
-};
 
+  // --- RENDER: MAIN SEARCH VIEW ---
   return (
     <div className="container">
+      <nav className="top-nav">
+        <button className="theme-toggle" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+          {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+        </button>
+      </nav>
+
       <header>
-        <Utensils color="#f97316" size={40} />
-        <h1>Recipe Radar</h1>
-        <p>Enter ingredients to find meals</p>
+        <div className="logo-icon">
+          <Utensils size={40} color="#f97316" />
+        </div>
+        <h1>Recipe <span className="highlight">Radar</span></h1>
+        <p>Your pantry, powered by AI.</p>
       </header>
 
       <form onSubmit={addIngredient} className="input-group">
         <input 
           value={ingredient}
           onChange={(e) => setIngredient(e.target.value)}
-          placeholder="e.g. Tomato, Chicken..."
+          placeholder="Add an ingredient (e.g. Eggs)..."
         />
         <button type="submit">Add</button>
       </form>
@@ -76,7 +141,8 @@ const toggleFavorite = (recipe) => {
       <div className="pantry-list">
         {pantry.map(item => (
           <span key={item} className="tag">
-            {item} <X size={14} onClick={() => removeIngredient(item)} />
+            {item} 
+            <X size={14} className="remove-icon" onClick={() => removeIngredient(item)} />
           </span>
         ))}
       </div>
@@ -86,25 +152,39 @@ const toggleFavorite = (recipe) => {
         onClick={findRecipes} 
         disabled={loading || pantry.length === 0}
       >
-        {loading ? <Loader2 className="spin" /> : "Find Recipes"}
+        {loading ? <Loader2 className="spin" /> : <><Search size={20} /> Find Recipes</>}
       </button>
 
       <div className="recipe-grid">
-  {recipes.map(recipe => (
-    <div key={recipe.id} className="recipe-card">
-      <img src={recipe.image} alt={recipe.title} />
-      <div className="card-content">
-        <h3>{recipe.title}</h3>
-        <button 
-          onClick={() => toggleFavorite(recipe)}
-          className={`fav-btn ${favorites.some(f => f.id === recipe.id) ? 'active' : ''}`}
-        >
-          {favorites.some(f => f.id === recipe.id) ? "❤️ Saved" : "🤍 Save"}
-        </button>
+        {recipes.map(recipe => (
+          <div key={recipe.id} className="recipe-card" onClick={() => fetchRecipeDetails(recipe.id)}>
+            <div className="image-container">
+              <img src={recipe.image} alt={recipe.title} />
+              <button 
+                className={`heart-btn ${favorites.some(f => f.id === recipe.id) ? 'active' : ''}`}
+                onClick={(e) => toggleFavorite(e, recipe)}
+              >
+                <Heart size={18} fill={favorites.some(f => f.id === recipe.id) ? "currentColor" : "none"} />
+              </button>
+            </div>
+            <div className="card-content">
+              <h3>{recipe.title}</h3>
+              <div className="card-footer">
+                <span className="match-badge">
+                  {recipe.usedIngredientCount} items matched
+                </span>
+                <ChefHat size={18} className="chef-icon" />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  ))}
-</div>
+
+      {recipes.length === 0 && !loading && (
+        <div className="empty-state">
+          <p>Add ingredients above to start your search!</p>
+        </div>
+      )}
     </div>
   );
 }
